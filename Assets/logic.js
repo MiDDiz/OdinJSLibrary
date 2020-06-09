@@ -17,8 +17,9 @@ function Book(title, author, pages, readState) {
 	this.pages = pages;
 	this.readState = readState;
 
-	// This might fail
 	this.switchState = function() {
+		console.log(`This is: ${this} and this.readstate = ${this.readState}`);
+
 		if (this.readState === 'Read') {
 			this.readState = 'Not Read';
 		} else {
@@ -69,7 +70,14 @@ function clearForms() {
 }
 
 function Render() {
-	// What we do is clear first the elements of the tbody of books in order to
+	// Hear me out
+	// In each Render we clean the boook tbody in order to keep the order while we can delete and modigy
+	// elements without keeping track of indexing. This way every time we modify something we re-render the table, or
+	// more exactly we dynamicaly recreate the table with each Book object.
+	//
+	// Also, In order to insert buttons we need to handle what variables from the book are text ond what are functions that are
+	// going to be atached to our buttons.
+
 	bookTbody.innerHTML = '';
 	console.log('Rendering');
 	myLibrary.forEach((book) => {
@@ -78,13 +86,13 @@ function Render() {
 			let parsedElement;
 			var newCell = newRow.insertCell();
 
-			console.log(book[element]);
-			if (element == 'switchState') {
+			if (element === 'switchState') {
 				parsedElement = document.createElement('BUTTON');
 				parsedElement.innerHTML = 'SwitchState';
-				parsedElement.addEventListener('click', book.switchState());
-			} else if ((element = '')) {
-				parsedElement = document.createTextNode('WIP');
+				parsedElement.addEventListener('click', () => {
+					console.log('Trying to go to switch');
+					book.switchState();
+				});
 			} else {
 				parsedElement = document.createTextNode(book[element]);
 			}
@@ -97,5 +105,3 @@ function Render() {
 appendBookBtn.addEventListener('click', () => {
 	addBookToLibrary();
 });
-
-// Init render
