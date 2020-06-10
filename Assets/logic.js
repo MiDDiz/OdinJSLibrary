@@ -9,6 +9,14 @@ const appendBookBtn = document.getElementById('AddBook');
 const bookTable = document.getElementById('book-table');
 const bookTbody = document.getElementById('book-tbody');
 
+// Get firebase instance and reference
+
+const dbRefObject = firebase.database().ref().child('object');
+
+dbRefObject.on('value', (dataSnapshot) => {
+	console.log(dataSnapshot.val());
+});
+
 let myLibrary = [];
 // Book constructor
 function Book(title, author, pages, readState) {
@@ -88,7 +96,11 @@ function Render() {
 
 			if (element === 'switchState') {
 				parsedElement = document.createElement('BUTTON');
+
+				//TODO Pick one or another -> Make the background has a switch image or just have it on plain text
 				parsedElement.innerHTML = 'SwitchState';
+				parsedElement.classList += 'switch-button';
+
 				parsedElement.addEventListener('click', () => {
 					console.log('Trying to go to switch');
 					book.switchState();
@@ -96,9 +108,24 @@ function Render() {
 			} else {
 				parsedElement = document.createTextNode(book[element]);
 			}
-
 			newCell.appendChild(parsedElement);
 		}
+		// This approach might look dirty, but the logic is simple. For each cell we had or a data variable or a function variable.
+		// But the delete button doesnt have any variable pair, so when we have finished iterating through the elements, we append the button.
+
+		var newCell = newRow.insertCell();
+		let deleteButton = document.createElement('BUTTON');
+
+		//TODO Pick one or another -> Make the background has a switch image or just have it on plain text
+		deleteButton.innerHTML = 'Delete';
+		deleteButton.classList += 'delete-button';
+
+		deleteButton.addEventListener('click', () => {
+			myLibrary.splice(myLibrary.indexOf(book), 1);
+			Render();
+		});
+
+		newCell.appendChild(deleteButton);
 	});
 }
 
