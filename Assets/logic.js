@@ -11,11 +11,7 @@ const bookTbody = document.getElementById('book-tbody');
 
 // Get firebase instance and reference
 
-const dbRefObject = firebase.database().ref().child('object');
-
-dbRefObject.on('value', (dataSnapshot) => {
-	console.log(dataSnapshot.val());
-});
+var db = firebase.firestore();
 
 let myLibrary = [];
 // Book constructor
@@ -35,6 +31,53 @@ function Book(title, author, pages, readState) {
 		}
 		Render();
 	};
+}
+
+function firestoreInit() {
+	db.collection('books').get().then((querySnapshot) => {
+		querySnapshot.forEach((doc) => {
+			console.log(`${doc.id} => ${doc.data().title}`);
+			myLibrary.push(new Book(doc.data().title, doc.data().author, doc.data().pages, doc.data().readState));
+		});
+		Render();
+	});
+}
+
+function addBookFirestore(book) {
+	db
+		.collection('books')
+		.add({
+			title: book.title,
+			author: book.author,
+			pages: book.pages,
+			readState: book.readState
+		})
+		.then((docRef) => {
+			console.log(`Document written with ID: ${docRef.id}`);
+		})
+		.catch((error) => {
+			console.error(`Error adding document: ${error}`);
+		});
+}
+
+function removeBookFirestore(title, author) {
+	//GET ID
+	db.collection('books').get().then((querySnapshot) => {
+		querySnapshot.forEach((doc) => {
+			if (doc.data().title === title && doc.data().author === author) {
+				db
+					.collection('books')
+					.doc(doc.id)
+					.delete()
+					.then(() => {
+						console.log('Book deleted!');
+					})
+					.catch((error) => {
+						console.error(`Error removing book: ${error}`);
+					});
+			}
+		});
+	});
 }
 
 function addBookToLibrary() {
@@ -58,6 +101,7 @@ function addBookToLibrary() {
 
 	const newBook = new Book(title, author, pages, read);
 	myLibrary.push(newBook);
+	addBookFirestore(newBook);
 
 	// DEBUG CODE
 	showBookList();
@@ -122,6 +166,7 @@ function Render() {
 
 		deleteButton.addEventListener('click', () => {
 			myLibrary.splice(myLibrary.indexOf(book), 1);
+			removeBookFirestore(book.title, book.author);
 			Render();
 		});
 
@@ -132,3 +177,5 @@ function Render() {
 appendBookBtn.addEventListener('click', () => {
 	addBookToLibrary();
 });
+
+firestoreInit();
